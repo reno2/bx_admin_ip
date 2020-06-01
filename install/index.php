@@ -7,8 +7,11 @@ use Bitrix\Main\EventManager;
 use \Bitrix\Main\Loader;
 use \Bitrix\Main\Entity\Base;
 use \Bitrix\Main\Application;
+
 Loc::loadMessages(__FILE__);
-class burns_orderip extends CModule{
+
+class burns_orderip extends CModule
+{
 
 		var $exclusionAdminFiles;
 
@@ -48,10 +51,10 @@ class burns_orderip extends CModule{
 		 * @return string|string[]
 		 */
 		//Определяем место размещения модуля
-		public function GetPath($notDocumentRoot=false)
+		public function GetPath($notDocumentRoot = false)
 		{
-				if($notDocumentRoot)
-						return str_ireplace(Application::getDocumentRoot(),'',dirname(__DIR__));
+				if ($notDocumentRoot)
+						return str_ireplace(Application::getDocumentRoot(), '', dirname(__DIR__));
 				else
 						return dirname(__DIR__);
 		}
@@ -62,22 +65,21 @@ class burns_orderip extends CModule{
 		function DoInstall()
 		{
 				global $APPLICATION;
-				if($this->isVersionD7()){
-
+				if ($this->isVersionD7())
+				{
 						\Bitrix\Main\ModuleManager::registerModule($this->MODULE_ID);
 						Loader::includeModule("burns.orderip");
-						//RegisterModule($this->MODULE_ID);
 						$this->InstallEvents();
 						$this->InstallDB();
-						
 						//$this->InstallFiles();
-
-				}else{
+				}
+				else
+				{
 						$APPLICATION->ThrowException(Loc::getMessage("BURNS_ORDERIP_ERROR_VERSION"));
 				}
-
-				$APPLICATION->IncludeAdminFile(Loc::getMessage("BURNS_ORDERIP_INSTALL_TITLE"), $this->GetPath()."/install/step.php");
+				$APPLICATION->IncludeAdminFile(Loc::getMessage("BURNS_ORDERIP_INSTALL_TITLE"), $this->GetPath() . "/install/step.php");
 		}
+
 		function DoUninstall()
 		{
 				global $APPLICATION;
@@ -85,26 +87,28 @@ class burns_orderip extends CModule{
 				$context = Application::getInstance()->getContext();
 				$request = $context->getRequest();
 
-				if($request["step"]<2)
+				if ($request["step"] < 2)
 				{
-						$APPLICATION->IncludeAdminFile(Loc::getMessage("BURNS_ORDERIP_UNINSTALL_TITLE"), $this->GetPath()."/install/unstep1.php");
+						$APPLICATION->IncludeAdminFile(Loc::getMessage("BURNS_ORDERIP_UNINSTALL_TITLE"), $this->GetPath() . "/install/unstep1.php");
 				}
-				elseif($request["step"]==2){
+				elseif ($request["step"] == 2)
+				{
 						//$this->UnInstallFiles();
 						$this->UnInstallEvents();
 						if ($request["savedata"] != "Y")
 								$this->UnInstallDB();
 
 						\Bitrix\Main\ModuleManager::unRegisterModule($this->MODULE_ID);
-						$APPLICATION->IncludeAdminFile(Loc::getMessage("BURNS_ORDERIP_UNINSTALL_TITLE"), $this->GetPath()."/install/unstep2.php");
+						$APPLICATION->IncludeAdminFile(Loc::getMessage("BURNS_ORDERIP_UNINSTALL_TITLE"), $this->GetPath() . "/install/unstep2.php");
 				}
 		}
 
-		function InstallFiles($arParams = array()){
+		function InstallFiles($arParams = array())
+		{
 
-				$path=$this->GetPath()."/install/components";
-				if(\Bitrix\Main\IO\Directory::isDirectoryExists($path))
-						CopyDirFiles($path, $_SERVER["DOCUMENT_ROOT"]."/bitrix/components", true, true);
+				$path = $this->GetPath() . "/install/components";
+				if (\Bitrix\Main\IO\Directory::isDirectoryExists($path))
+						CopyDirFiles($path, $_SERVER["DOCUMENT_ROOT"] . "/bitrix/components", true, true);
 				else
 						throw new \Bitrix\Main\IO\InvalidPathException($path);
 
@@ -115,10 +119,10 @@ class burns_orderip extends CModule{
 						{
 								while (false !== $item = readdir($dir))
 								{
-										if (in_array($item,$this->exclusionAdminFiles))
+										if (in_array($item, $this->exclusionAdminFiles))
 												continue;
-										file_put_contents($_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/'.$this->MODULE_ID.'_'.$item,
-												'<'.'? require($_SERVER["DOCUMENT_ROOT"]."'.$this->GetPath(true).'/admin/'.$item.'");?'.'>');
+										file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/bitrix/admin/' . $this->MODULE_ID . '_' . $item,
+												'<' . '? require($_SERVER["DOCUMENT_ROOT"]."' . $this->GetPath(true) . '/admin/' . $item . '");?' . '>');
 								}
 								closedir($dir);
 						}
@@ -126,15 +130,19 @@ class burns_orderip extends CModule{
 
 				return true;
 		}
+
 		function UnInstallFiles()
 		{
 				\Bitrix\Main\IO\Directory::deleteDirectory($_SERVER["DOCUMENT_ROOT"] . '/bitrix/components/burns/');
 
-				if (\Bitrix\Main\IO\Directory::isDirectoryExists($path = $this->GetPath() . '/admin')) {
+				if (\Bitrix\Main\IO\Directory::isDirectoryExists($path = $this->GetPath() . '/admin'))
+				{
 
 						DeleteDirFiles($_SERVER["DOCUMENT_ROOT"] . $this->GetPath() . '/install/admin/', $_SERVER["DOCUMENT_ROOT"] . '/bitrix/admin');
-						if ($dir = opendir($path)) {
-								while (false !== $item = readdir($dir)) {
+						if ($dir = opendir($path))
+						{
+								while (false !== $item = readdir($dir))
+								{
 										if (in_array($item, $this->exclusionAdminFiles))
 												continue;
 										\Bitrix\Main\IO\File::deleteFile($_SERVER['DOCUMENT_ROOT'] . '/bitrix/admin/' . $this->MODULE_ID . '_' . $item);
@@ -142,6 +150,7 @@ class burns_orderip extends CModule{
 								closedir($dir);
 						}
 				}
+
 				return false;
 		}
 
@@ -177,18 +186,20 @@ class burns_orderip extends CModule{
 				Loader::includeModule($this->MODULE_ID);
 
 				CModule::IncludeModule($this->MODULE_ID);
-				if(!Application::getConnection(\Burns\OrderipTable::getConnectionName())->isTableExists(
+				if (!Application::getConnection(\Burns\OrderipTable::getConnectionName())->isTableExists(
 						Base::getInstance('\Burns\OrderipTable')->getDBTableName()
 				)
 				)
 				{
 						Base::getInstance('\Burns\OrderipTable')->createDbTable();
 				}
+
 				return true;
 		}
 
 
-		public function UnInstallDB(){
+		public function UnInstallDB()
+		{
 
 				Loader::includeModule($this->MODULE_ID);
 				// Проверяет от текущего подключения
@@ -196,6 +207,7 @@ class burns_orderip extends CModule{
 				Application::getConnection(\Burns\OrderipTable::getConnectionName())->queryExecute('drop table if exists ' . Base::getInstance('\Burns\OrderipTable')->getDBTableName());
 
 				Option::delete($this->MODULE_ID);
+
 				return false;
 
 		}

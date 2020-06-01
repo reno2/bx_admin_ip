@@ -15,26 +15,29 @@ class Mainorder{
 				$result = \Burns\OrderipTable::getList(array(
 						'filter'=>array('ORDER_ID'=> (int)$id)
 				))->fetch();
-				$res = '';
 				if(count($result))
 						return $result;
+				else
+						return false;
 		}
 
 		function show(\Bitrix\Main\Event $event)
 		{
 				$order = $event->getParameter("ORDER")->getId();
-
 				$value = self::ormGet($order);
-		   return new \Bitrix\Main\EventResult(
-            \Bitrix\Main\EventResult::SUCCESS,
-				   array(
-						   array('TITLE' => 'City Data:',
-						         'VALUE' => $value['CITY']),
-						   array('TITLE' => 'IP:',
-						         'VALUE' => $value['IP']),
-				   ),
-				   'sale'
-		   );
+				if($value)
+				{
+						return new \Bitrix\Main\EventResult(
+								\Bitrix\Main\EventResult::SUCCESS,
+								array(
+										array('TITLE' => 'City Data:',
+										      'VALUE' => $value['CITY']),
+										array('TITLE' => 'IP:',
+										      'VALUE' => $value['IP']),
+								),
+								'sale'
+						);
+				}
 		}
 
 
@@ -96,8 +99,6 @@ class Mainorder{
 						$orderId = $order->getId();
 						self::addRow($orderId);
 				}
-
 		}
-
 
 }
